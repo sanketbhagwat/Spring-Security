@@ -2,8 +2,16 @@ package com.eazybytes.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -22,4 +30,21 @@ public class ProjectSecurityConfig {
         return http.build();
     }
 
+    @Bean
+    public UserDetailsService userDetailsService(){
+        UserDetails user = User.withUsername("user").password("{bcrypt}$2a$12$./6OI5OPH88kpsV8y3s56u.Oxz8YWgOhWxBFNHhD76Fz5FwnayOpu").authorities("read").build();
+        UserDetails admin = User.withUsername("admin").password("{bcrypt}$2a$12$./6OI5OPH88kpsV8y3s56u.Oxz8YWgOhWxBFNHhD76Fz5FwnayOpu").authorities("admin").build();
+        return new InMemoryUserDetailsManager(user, admin);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+ 
+    /** enhancement from 6.3 version of spring boot (haveIbeenpwned) */
+    @Bean
+    public CompromisedPasswordChecker compromisedPasswordChecker(){
+        return new HaveIBeenPwnedRestApiPasswordChecker();
+    }
 }
